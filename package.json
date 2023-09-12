@@ -1,16 +1,16 @@
 {
-  "name": "templates-core",
+  "name": "dtdaemon",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node src/cli.js",
-    "build": "bun run build:login && bun run build:apps && bun run build:cli && bun run build:docker && rm -r ./dist",
-    "build:cli": "bun build src/cli.js --outdir dist --target bun",
+    "daemon": "bun src/daemon.js",
+    "build": "bun run build:login && bun run build:apps && bun run build:daemon && bun run build:docker && rm -r ./dist",
+    "build:daemon": "bun build src/daemon.js --outdir dist --target bun",
     "build:login": "cd loginServer && bun i && bun run build",
     "build:apps": "node src/appsFile.js bundle",
-    "build:docker": "docker buildx build -t lowet84/dtdaemon .",
-    "preview": "bun run build && docker run --rm -it -v dtdaemon:/app/config -v /var/run/docker.sock:/var/run/docker.sock lowet84/dtdaemon"
+    "build:docker": "docker buildx build -t lowet84/dtdaemon ."
   },
   "type": "module",
   "keywords": [],
@@ -24,7 +24,8 @@
   "dependencies": {
     "yaml": "^2.3.2",
     "inquirer": "^9.2.10",
-    "terminal-image": "^2.0.0"
+    "terminal-image": "^2.0.0",
+    "elysia": "^0.6.23"
   },
   "bin": "src/cli.js",
   "exports": {

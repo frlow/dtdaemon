@@ -8,6 +8,8 @@ import {
   getAppLogo,
   removeApp,
   installApp,
+  pull,
+  log,
 } from './index.js'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
@@ -83,7 +85,7 @@ while (true) {
       type: 'list',
       default: 'setup',
       message: 'What do you want to do?',
-      choices: ['settings', 'update', 'apps', 'exit'],
+      choices: ['settings', 'update', 'apps', 'pull', 'exit'],
     },
   ])
   switch (result.command) {
@@ -145,24 +147,24 @@ while (true) {
       console.log(meta.description || '')
       const prompt = apps[appResult.app]
         ? {
-            name: 'uninstall',
+            name: 'command',
             type: 'list',
             default: 'return',
             message: `Uninstall ${appResult.app}?`,
-            choices: ['uninstall', 'return'],
+            choices: ['uninstall', 'log', 'return'],
           }
         : {
-            name: 'install',
+            name: 'command',
             type: 'list',
             default: 'return',
             message: `Install ${appResult.app}?`,
             choices: ['install', 'return'],
           }
       const manageResult = await inquirer.prompt([prompt])
-      if (manageResult.uninstall === 'uninstall') {
+      if (manageResult.command === 'uninstall') {
         await removeApp(appResult.app)
         await update()
-      } else if (manageResult.install === 'install') {
+      } else if (manageResult.command === 'install') {
         const variables = meta.variables
           ? await inquirer.prompt(
               meta.variables.map((variable) => ({
@@ -174,7 +176,13 @@ while (true) {
           : {}
         await installApp(appResult.app, variables)
         await update()
+      } else if (manageResult.command === 'log') {
+        console.log(await log(appResult.app))
       }
+      break
+    case 'pull':
+      await pull()
+      await update()
       break
     case 'exit':
       process.exit(0)

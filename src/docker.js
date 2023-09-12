@@ -58,6 +58,7 @@ export const dockerInstall = async (config, log) => {
  */
 export const dockerPull = async (config, log) => {
   const compose = await generateCompose(config)
+  delete (compose.services || {})['auth']
   const settings = config.settings
   const command = `docker compose -p ${settings.project} -f - pull`
   await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
