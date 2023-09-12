@@ -1,0 +1,18 @@
+services:
+  emulatorjs:
+    image: lscr.io/linuxserver/emulatorjs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - emulatorjs:/config
+      - emulatorjs-data:/data
+
+ingresses:
+  emulatorjs-admin: 3000
+  emulatorjs: 80
+
+description: |
+  # EmulatorJs
+  Self-hosted Javascript emulation for various system.

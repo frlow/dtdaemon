@@ -1,0 +1,12 @@
+services:
+  rutorrent:
+    image: ghcr.io/linuxserver/rutorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - rutorrent:/config
+      - media:/data
+
+ingresses:
+  rutorrent: 80

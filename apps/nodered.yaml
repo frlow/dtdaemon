@@ -1,0 +1,12 @@
+services:
+  nodered:
+    image: nodered/node-red
+    volumes:
+      - nodered:/data
+
+ingresses:
+  nodered: 1880
+
+description: |
+  # Node Red
+  This application has a known issue where restoring backups breaks the application

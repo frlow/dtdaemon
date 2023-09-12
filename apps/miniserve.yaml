@@ -1,0 +1,10 @@
+services:
+  miniserve:
+    image: docker.io/svenstaro/miniserve
+    volumes:
+      - media:/data
+    command:
+      - "/data"
+
+ingresses:
+  miniserve: 8080

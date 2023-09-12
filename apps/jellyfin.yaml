@@ -1,0 +1,22 @@
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - jellyfin:/config
+      - media:/data
+      - /opt/vc/lib:/opt/vc/lib
+    devices:
+      - /dev/vchiq:/dev/vchiq
+      - /dev/video10:/dev/video10
+      - /dev/video11:/dev/video11
+      - /dev/video12:/dev/video12
+    ports:
+      - 7359:7359/udp
+      - 1900:1900/udp
+
+ingresses:
+  jellyfin: -8096

@@ -1,0 +1,15 @@
+services:
+  nzbget:
+    image: lscr.io/linuxserver/nzbget
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+      - NZBGET_USER={{username}}
+      - NZBGET_PASS={{password}}
+    volumes:
+      - nzbget:/config
+      - media:/data
+
+ingresses:
+  nzbget: 6789

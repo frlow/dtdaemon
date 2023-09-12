@@ -1,0 +1,9 @@
+services:
+  portainer:
+    image: cr.portainer.io/portainer/portainer-ce
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+
+ingresses:
+  portainer: 9000

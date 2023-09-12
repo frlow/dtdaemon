@@ -1,0 +1,8 @@
+services:
+  demo:
+    image: nginxdemos/nginx-hello
+
+ingresses:
+  demo: 8080
+
+description: "An nginx demo app"

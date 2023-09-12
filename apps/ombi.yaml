@@ -1,0 +1,12 @@
+services:
+  ombi:
+    image: lscr.io/linuxserver/ombi
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+    volumes:
+      - ombi:/config
+
+ingresses:
+  ombi: -3579

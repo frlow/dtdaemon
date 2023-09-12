@@ -1,0 +1,8 @@
+services:
+  guacamole:
+    image: maxwaldorf/guacamole
+    volumes:
+      - guacamole:/config
+  
+ingresses:
+  guacamole: 8080

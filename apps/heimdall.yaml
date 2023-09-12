@@ -1,0 +1,12 @@
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - heimdall:/config
+
+ingresses:
+  heimdall: 80

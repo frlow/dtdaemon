@@ -1,0 +1,14 @@
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+      - SUDO_PASSWORD={{password}}
+      - PASSWORD={{password}}
+    volumes:
+      - code-server:/config
+
+ingresses:
+  code-server: -8443

@@ -1,0 +1,8 @@
+services:
+  compose:
+    image: "ghcr.io/muchobien/pocketbase:latest"
+    volumes:
+      - "pocketbase:/pb_data"
+
+ingresses:
+  pocketbase: -8090

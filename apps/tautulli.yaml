@@ -1,0 +1,12 @@
+services:
+  tautulli:
+    image: lscr.io/linuxserver/tautulli
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - tautulli:/config
+
+ingresses:
+  tautulli: 8181

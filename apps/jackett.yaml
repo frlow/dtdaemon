@@ -1,0 +1,12 @@
+services:
+  jackett:
+    image: lscr.io/linuxserver/jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+    volumes:
+      - jackett:/config
+
+ingresses:
+  jackett: 9117

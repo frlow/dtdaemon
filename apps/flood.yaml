@@ -1,0 +1,18 @@
+services:
+  flood:
+    image: jesec/flood
+    volumes:
+      - flood:/config
+    environment:
+      - FLOOD_OPTION_rundir=/config
+    user: root
+
+ingresses:
+  flood: 3000
+description: |
+  # Flood
+  Flood is a monitoring service for various torrent clients. It's a Node.js service that communicates with your favorite torrent client and serves a decent web UI for administration. Flood-UI organization hosts related projects.
+  ```
+  use the following urls when connecting clients: 
+  transmission: http://transmission:9091/transmission/rpc
+  ```

@@ -1,0 +1,13 @@
+services:
+  deluge:
+    image: lscr.io/linuxserver/deluge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+    volumes:
+      - deluge:/config
+      - media:/data
+
+ingresses:
+  deluge: 8112

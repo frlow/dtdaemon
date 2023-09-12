@@ -1,0 +1,15 @@
+services:
+  duplicato:
+    image: lscr.io/linuxserver/duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - duplicati_config:/config
+      - duplicati_backups:/backups
+      - duplicati_source:/source
+      - media:/data
+
+ingresses:
+  duplicati: 8200

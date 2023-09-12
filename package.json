@@ -1,0 +1,39 @@
+{
+  "name": "templates-core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/cli.js",
+    "build": "bun run build:login && bun run build:apps && bun run build:cli && bun run build:docker && rm -r ./dist",
+    "build:cli": "bun build src/cli.js --outdir dist --target bun",
+    "build:login": "cd loginServer && bun i && bun run build",
+    "build:apps": "node src/appsFile.js bundle",
+    "build:docker": "docker buildx build -t demo ."
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.0.3",
+    "@types/node": "^20.5.9",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "yaml": "^2.3.2",
+    "inquirer": "^9.2.10",
+    "terminal-image": "^2.0.0"
+  },
+  "bin": "src/cli.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "engines": {
+    "node": ">=16.8"
+  },
+  "files": ["src"]
+}
