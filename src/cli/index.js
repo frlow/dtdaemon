@@ -10,11 +10,9 @@ import {
   installApp,
   pull,
   log,
-} from '../index.js'
+} from './api.js'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
-
-const buildDaemon = () => {}
 
 const prompts = () => {
   const settings = getSettings()
@@ -53,11 +51,11 @@ const prompts = () => {
         { name: 'Http', value: true },
       ],
     },
-    project: {
-      type: 'input',
-      message: 'Project name:',
-      default: settings.username || 'apps',
-    },
+    // project: {
+    //   type: 'input',
+    //   message: 'Project name:',
+    //   default: settings.username || 'apps',
+    // },
     appDirectory: {
       type: 'input',
       message: 'App directory url:',
@@ -99,7 +97,7 @@ while (true) {
           default: 'setup',
           message: 'What setting do you want to change?',
           choices: Reflect.ownKeys(settings).filter(
-            (key) => !['repeat', 'project'].includes(key),
+            (key) => !['repeat'].includes(key),
           ),
         },
       ])

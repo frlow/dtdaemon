@@ -31,7 +31,7 @@ import { authService, traefikService } from './services.js'
  */
 export const dockerLog = async (config, id, log) => {
   const compose = await generateCompose(config)
-  const command = `docker compose -p ${config.settings.project} -f - logs ${id}`
+  const command = `docker compose -p dt -f - logs ${id}`
   await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
 }
 
@@ -46,7 +46,7 @@ export const dockerInstall = async (config, log) => {
   const settings = config.settings
   const base64 = Buffer.from(JSON.stringify(compose)).toString('base64')
   await execCommand(
-    `echo ${base64} | base64 -d | docker compose -p ${settings.project} -f - up -d --remove-orphans`,
+    `echo ${base64} | base64 -d | docker compose -p dt -f - up -d --remove-orphans`,
     log,
   )
 }
@@ -61,7 +61,7 @@ export const dockerPull = async (config, log) => {
   delete (compose.services || {})['auth']
   delete (compose.services || {})['dtdaemon']
   const settings = config.settings
-  const command = `docker compose -p ${settings.project} -f - pull`
+  const command = `docker compose -p dt -f - pull`
   await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
 }
 
