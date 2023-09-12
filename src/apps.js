@@ -1,6 +1,5 @@
-import { getInstalledApps, saveInstalledApps } from './installedApps.js'
 import { getAppDirectory } from './appDirectory.js'
-import { getSettings } from './settings.js'
+import { getSettings, getInstalledApps, saveInstalledApps } from './config.js'
 
 /**
  *

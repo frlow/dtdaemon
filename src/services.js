@@ -62,3 +62,27 @@ export const authService = (settings) => {
   }
   return service
 }
+
+/**
+ *
+ * @param {Settings} settings
+ * @returns {DefinitionsService}
+ */
+export const daemonService = (settings) => {
+  const service = {
+    image: 'dtdaemon',
+    restart: 'always',
+    volumes: ['/var/run/docker.sock:/var/run/docker.sock', 'dtdaemon:/config'],
+    labels: [
+      'traefik.enable=true',
+      'traefik.http.routers.auth.rule=PathPrefix(`/__login`)',
+      'traefik.http.routers.auth.priority=1000',
+      'traefik.http.services.auth.loadbalancer.server.port=3000',
+      'traefik.http.routers.auth.service=auth',
+      `traefik.http.routers.auth.entrypoints=web${
+        settings.insecure ? '' : 'secure'
+      }`,
+    ],
+  }
+  return service
+}

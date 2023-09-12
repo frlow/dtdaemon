@@ -12,6 +12,7 @@ export const buildAuthImage = async () => {
     return
 
   const tempdir = './dockertemp'
+  if (fs.existsSync(tempdir)) fs.rmSync(tempdir, { recursive: true })
   fs.mkdirSync(tempdir)
   fs.writeFileSync(
     path.join(tempdir, 'Dockerfile'),

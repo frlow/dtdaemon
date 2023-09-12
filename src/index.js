@@ -1,10 +1,9 @@
-import { getSettings } from './settings.js'
 import { dockerInstall, dockerLog, dockerPull } from './docker.js'
 import { getAppDirectory } from './appDirectory.js'
-import { getInstalledApps } from './installedApps.js'
 import { buildAuthImage } from './init.js'
+import { getInstalledApps, getSettings } from './config.js'
 
-export { getSettings, saveSettings } from './settings.js'
+export { getSettings, saveSettings } from './config.js'
 export {
   removeApp,
   installApp,
@@ -30,8 +29,7 @@ const getConfig = async () => {
  * @returns {Promise<void>}
  */
 export const update = async (log) => {
-  await buildAuthImage()
-
+  await await buildAuthImage()
   await dockerInstall(await getConfig(), log || console.log)
 }
 

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/cli.js",
+    "start": "node src/cli/index.js",
     "daemon": "bun src/daemon.js",
     "build": "bun run build.js"
   },
@@ -25,7 +25,7 @@
     "@elysiajs/cookie": "^0.6.1",
     "nanoid": "^4.0.2"
   },
-  "bin": "src/cli.js",
+  "bin": "src/cli/index.js",
   "exports": {
     ".": {
       "import": "./src/index.js",

@@ -10,9 +10,11 @@ import {
   installApp,
   pull,
   log,
-} from './index.js'
+} from '../index.js'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
+
+const buildDaemon = () => {}
 
 const prompts = () => {
   const settings = getSettings()
@@ -96,7 +98,9 @@ while (true) {
           type: 'list',
           default: 'setup',
           message: 'What setting do you want to change?',
-          choices: Reflect.ownKeys(settings).filter((key) => key !== 'repeat'),
+          choices: Reflect.ownKeys(settings).filter(
+            (key) => !['repeat', 'project'].includes(key),
+          ),
         },
       ])
       const promptsTemp = prompts()

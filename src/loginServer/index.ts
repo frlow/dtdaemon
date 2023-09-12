@@ -2,8 +2,11 @@ import { Elysia, t } from 'elysia'
 import { cookie } from '@elysiajs/cookie'
 import { nanoid } from 'nanoid'
 
+// @ts-ignore
 const password = Bun.env.PASSWORD || 'nopass'
+// @ts-ignore
 const domain = Bun.env.DOMAIN || 'example.com'
+// @ts-ignore
 const insecure = !!Bun.env.INSECURE || false
 
 const tokens: Record<string, number> = {}
@@ -100,14 +103,15 @@ input{
           name='password'
           type='password'
         />
-        ${query.wrongpass
-        ? `
+        ${
+          query.wrongpass
+            ? `
           <div style="color: firebrick;">
             Wrong username or password
           </div>
         `
-        : ''
-      }
+            : ''
+        }
         <input
         class="button"
           type='submit'
@@ -128,9 +132,8 @@ input{
         expires.setTime(token.expires)
         removeCookie('access-token')
         setCookie('access-token', token.token, {
-          domain: request.url.startsWith('http://localhost:3000')
-            ? ''
-            : domain, expires
+          domain: request.url.startsWith('http://localhost:3000') ? '' : domain,
+          expires,
         })
         set.redirect = `${query.redirect || '/'}`
       } else {
@@ -146,14 +149,15 @@ input{
   )
   .get('/__login/q', ({ cookie, set, headers }) => {
     const accessToken = cookie['access-token']
-    if (tokens[accessToken] && Date.now()<tokens[accessToken]) {
+    if (tokens[accessToken] && Date.now() < tokens[accessToken]) {
       set.status = 200
       return
     }
     const forwardUrl = headers['x-forwarded-uri']?.split('?')[0] || '/'
     const forwardedHost = headers['x-forwarded-host']
-    set.redirect = `http${insecure ? '' : 's'
-      }://${forwardedHost}/__login?redirect=${forwardUrl}`
+    set.redirect = `http${
+      insecure ? '' : 's'
+    }://${forwardedHost}/__login?redirect=${forwardUrl}`
   })
   .listen(3000)
 
