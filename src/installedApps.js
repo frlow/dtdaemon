@@ -11,7 +11,9 @@ const installedAppsPath = './config/apps.json'
  * @returns {InstalledApps}
  */
 export const getInstalledApps = () =>
-  JSON.parse(fs.readFileSync(installedAppsPath, 'utf8'))
+  fs.existsSync(installedAppsPath)
+    ? JSON.parse(fs.readFileSync(installedAppsPath, 'utf8'))
+    : {}
 
 /**
  *

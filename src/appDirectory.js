@@ -11,5 +11,5 @@ import { loadApps } from './appsFile.js'
  */
 export const getAppDirectory = async (url) => {
   if (url === 'local') return loadApps()
-  else throw 'Not Implemented yet!'
+  else return await fetch(url).then((r) => r.json())
 }

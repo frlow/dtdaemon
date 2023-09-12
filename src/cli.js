@@ -57,23 +57,22 @@ const prompts = () => {
     appDirectory: {
       type: 'input',
       message: 'App directory url:',
-      default: settings.appDirectory || 'local',
+      default:
+        settings.appDirectory ||
+        'https://raw.githubusercontent.com/frlow/dtdaemon/main/appDirectory.json',
     },
   }
 }
 
-{
-  const settings = getSettings()
-  if (!settings.domain) {
-    const result = await inquirer.prompt(
-      Object.entries(prompts()).map(([name, value]) => ({
-        name,
-        ...value,
-      })),
-    )
-    Object.entries(result).forEach(([key, value]) => (settings[key] = value))
-    await update()
-  }
+if (!getSettings().domain) {
+  const result = await inquirer.prompt(
+    Object.entries(prompts()).map(([name, value]) => ({
+      name,
+      ...value,
+    })),
+  )
+  saveSettings(result)
+  await update()
 }
 
 while (true) {

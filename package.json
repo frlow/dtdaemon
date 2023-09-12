@@ -9,7 +9,8 @@
     "build:cli": "bun build src/cli.js --outdir dist --target bun",
     "build:login": "cd loginServer && bun i && bun run build",
     "build:apps": "node src/appsFile.js bundle",
-    "build:docker": "docker buildx build -t demo ."
+    "build:docker": "docker buildx build -t lowet84/dtdaemon .",
+    "preview": "bun run build && docker run --rm -it -v dtdaemon:/app/config -v /var/run/docker.sock:/var/run/docker.sock lowet84/dtdaemon"
   },
   "type": "module",
   "keywords": [],
