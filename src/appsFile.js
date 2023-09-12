@@ -31,10 +31,3 @@ export const loadApps = () => {
   // @ts-ignore
   return appDirectory
 }
-
-if (process.argv[2] === 'bundle')
-  fs.writeFileSync(
-    path.join('./appDirectory.json'),
-    JSON.stringify(loadApps(), null, 2),
-    'utf8',
-  )
