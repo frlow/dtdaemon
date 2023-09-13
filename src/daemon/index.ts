@@ -5,7 +5,7 @@ import { getAppLogo, getAppMetadata, listApps } from './apps'
 
 const app = new Elysia()
   .get('/', ({ set }) => {
-    set.status = !!getSettings() ? 200 : 204
+    set.status = !!getSettings().domain ? 200 : 204
   })
   .get('/settings', ({ set }) => {
     set.headers = {

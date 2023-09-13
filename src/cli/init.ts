@@ -18,7 +18,7 @@ export const init = async (settings: Settings) => {
     await execCommand('docker network create dtdaemon')
     await execCommand('docker rm -f dtdaemon')
     await execCommand(
-      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8466:8466 --net dtdaemon --name dtdaemon lowet84/dtdaemon`,
+      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8466:8466 --net dtdaemon --name dtdaemon dtdaemon`,
     )
     while (true) {
       console.log('Connecting to daemon...')
@@ -41,7 +41,7 @@ const buildDockerImage = async (
   const code = await Bun.build({
     entrypoints: [entry],
     target: 'bun',
-    minify: true,
+    minify: false,
   }).then((r) => r.outputs[0].text())
   fs.writeFileSync(path.join(tempdir, 'index.js'), code, 'utf8')
   await execCommand(`cd ${tempdir} && docker buildx build -t ${image} .`)
@@ -49,7 +49,11 @@ const buildDockerImage = async (
 }
 
 const buildAuthImage = async () => {
-  const dockerfile = `FROM oven/bun\nADD index.js /index.js\nWORKDIR /\n\EXPOSE 3000\nCMD bun run /index.js`
+  const dockerfile = `FROM oven/bun
+  ADD index.js /index.js
+  WORKDIR /
+  EXPOSE 3000
+  CMD bun run /index.js`
   const entry = path.join(import.meta.path, '..', '..', 'login', 'index.ts')
   const image = 'simple-auth'
   await buildDockerImage(dockerfile, entry, image)
@@ -62,7 +66,7 @@ RUN apt update && \\
     curl -fsSL https://get.docker.com/ | sh
 COPY index.js /index.js
 WORKDIR /
-CMD bun /index.ts
+CMD bun /index.js
 `
   const entry = path.join(import.meta.path, '..', '..', 'daemon', 'index.ts')
   const image = 'dtdaemon'

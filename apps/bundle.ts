@@ -9,16 +9,19 @@ export const loadApps = () => {
   for (const file of files) {
     const filePath = path.join(appDir, file)
     const { name, ext } = path.parse(filePath)
-    if (!appDirectory[name]) appDirectory[name] = {}
-    if (ext === '.yaml')
+
+    if (ext === '.yaml') {
+      if (!appDirectory[name]) appDirectory[name] = {}
       appDirectory[name] = {
         ...appDirectory[name],
         ...YAML.parse(fs.readFileSync(filePath, 'utf8')),
       }
-    else if (ext === '.png')
+    } else if (ext === '.png') {
+      if (!appDirectory[name]) appDirectory[name] = {}
       appDirectory[name].logoImage = Buffer.from(
         fs.readFileSync(filePath),
       ).toString('base64')
+    }
   }
   // @ts-ignore
   return appDirectory

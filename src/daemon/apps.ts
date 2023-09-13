@@ -4,6 +4,7 @@ import { Variables } from '../types/Variables'
 
 export const listApps = async (): Promise<Record<string, boolean>> => {
   const settings = getSettings()
+  debugger
   const installedApps = getInstalledApps()
   const appNames = Object.keys(await getAppDirectory(settings.appDirectory))
   return appNames.reduce(
