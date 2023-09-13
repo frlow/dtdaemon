@@ -10,7 +10,7 @@ await Bun.build({
   minify: true,
   outdir: distDir,
   target: 'bun',
-})
+}).then((r) => console.log(r.logs))
 const code = btoa(await Bun.file('./dist/index.js').text())
 await Bun.write(
   './src/cli/loginServer.ts',
@@ -24,11 +24,11 @@ fs.writeFileSync(
 )
 
 await Bun.build({
-  entrypoints: ['src/daemon.ts'],
+  entrypoints: ['src/daemon/daemon.ts'],
   minify: true,
   outdir: distDir,
   target: 'bun',
-})
+}).then((r) => console.log(r.logs))
 
 await execCommand('docker buildx build -t lowet84/dtdaemon .')
 

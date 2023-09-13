@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { getSettings, saveSettings } from './config'
 import { Settings } from '../types/Settings'
+import { getAppLogo, getAppMetadata, listApps } from './apps'
 
 const app = new Elysia()
   .get('/', ({ set }) => {
@@ -20,6 +21,21 @@ const app = new Elysia()
     },
     { type: 'application/json' },
   )
+  .get('/apps', async ({ set }) => {
+    set.headers = {
+      'content-type': 'application/json',
+    }
+    return JSON.stringify(await listApps())
+  })
+  .get('/apps/:id', async ({ set, params }) => {
+    set.headers = {
+      'content-type': 'application/json',
+    }
+    return JSON.stringify(await getAppMetadata(params.id))
+  })
+  .get('/apps/:id/logo', async ({ set, params }) => {
+    return JSON.stringify(await getAppLogo(params.id))
+  })
   .listen(8466)
 
 console.log(

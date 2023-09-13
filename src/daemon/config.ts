@@ -28,7 +28,7 @@ export const saveInstalledApps = (installedApps: InstalledApps) =>
   saveConfig(installedAppsPath, installedApps)
 
 const loadConfig = <T>(file: string): T =>
-  fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : undefined
+  fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
 
 const saveConfig = (file: string, config: any) => {
   if (!fs.existsSync(path.dirname(file))) fs.mkdirSync(path.dirname(file))

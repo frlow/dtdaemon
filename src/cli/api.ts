@@ -18,11 +18,6 @@ export const update = async (): Promise<string> => {
   throw 'N/A'
 }
 
-export const getAppLogo = async (name: string) => {
-  debugger
-  throw 'N/A'
-}
-
 export const removeApp = async (name: string) => {
   debugger
   throw 'N/A'
@@ -31,20 +26,20 @@ export const removeApp = async (name: string) => {
 export const installApp = async (
   name: string,
   variables: Record<string, string>,
-) => {
-  debugger
-  throw 'N/A'
-}
+) =>
+  await fetch(`${daemonHostUrl}/apps/${name}`, {
+    method: 'PUSH',
+    body: JSON.stringify(variables),
+  })
 
-export const listApps = async (): Promise<Record<string, boolean>> => {
-  debugger
-  throw 'N/A'
-}
+export const getAppLogo = async (name: string) =>
+  await fetch(`${daemonHostUrl}/apps/${name}/logo`).then((r) => r.text())
 
-export const getAppMetadata = async (name: string): Promise<AppConfig> => {
-  debugger
-  throw 'N/A'
-}
+export const listApps = async (): Promise<Record<string, boolean>> =>
+  await fetch(`${daemonHostUrl}/apps`).then((r) => r.json())
+
+export const getAppMetadata = async (name: string): Promise<AppConfig> =>
+  await fetch(`${daemonHostUrl}/apps/${name}`).then((r) => r.json())
 
 export const getSettings = async (): Promise<Settings> =>
   await fetch(`${daemonHostUrl}/settings`).then((r) => r.json())
