@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { loginServer } from './loginServer.js'
 import { execCommand } from '../exec'
 import { Settings } from '../types/Settings'
 import { daemonHostUrl, saveSettings } from './api'
@@ -8,8 +7,14 @@ import { daemonHostUrl, saveSettings } from './api'
 export const daemonStatus = async () =>
   (await fetch(daemonHostUrl).catch(() => undefined))?.status
 
+export const buildImages = async () => {
+  await buildAuthImage()
+  await buildDaemonImage()
+}
+
 export const init = async (settings: Settings) => {
   if (!(await daemonStatus())) {
+    await buildImages()
     await execCommand('docker network create dtdaemon')
     await execCommand('docker rm -f dtdaemon')
     await execCommand(
@@ -17,23 +22,49 @@ export const init = async (settings: Settings) => {
     )
     while (true) {
       console.log('Connecting to daemon...')
-      if (!(await daemonStatus())) break
+      if (await daemonStatus()) break
       await new Promise((r) => setTimeout(() => r(''), 1000))
     }
   }
   await saveSettings(settings)
 }
 
-export const buildAuthImage = async () => {
+const buildDockerImage = async (
+  dockerfile: string,
+  entry: string,
+  image: string,
+) => {
   const tempdir = './dockertemp'
   if (fs.existsSync(tempdir)) fs.rmSync(tempdir, { recursive: true })
   fs.mkdirSync(tempdir)
-  fs.writeFileSync(
-    path.join(tempdir, 'Dockerfile'),
-    `FROM oven/bun\nADD index.js /index.js\nWORKDIR /\n\EXPOSE 3000\nCMD bun run /index.js`,
-    'utf8',
-  )
-  fs.writeFileSync(path.join(tempdir, 'index.ts'), atob(loginServer), 'utf8')
-  await execCommand(`cd ${tempdir} && docker buildx build -t simple-auth .`)
+  fs.writeFileSync(path.join(tempdir, 'Dockerfile'), dockerfile, 'utf8')
+  const code = await Bun.build({
+    entrypoints: [entry],
+    target: 'bun',
+    minify: true,
+  }).then((r) => r.outputs[0].text())
+  fs.writeFileSync(path.join(tempdir, 'index.js'), code, 'utf8')
+  await execCommand(`cd ${tempdir} && docker buildx build -t ${image} .`)
   fs.rmSync('./dockertemp', { recursive: true })
+}
+
+const buildAuthImage = async () => {
+  const dockerfile = `FROM oven/bun\nADD index.js /index.js\nWORKDIR /\n\EXPOSE 3000\nCMD bun run /index.js`
+  const entry = path.join(import.meta.path, '..', '..', 'login', 'index.ts')
+  const image = 'simple-auth'
+  await buildDockerImage(dockerfile, entry, image)
+}
+
+const buildDaemonImage = async () => {
+  const dockerfile = `FROM oven/bun
+RUN apt update && \\
+    apt install -y curl && \\
+    curl -fsSL https://get.docker.com/ | sh
+COPY index.js /index.js
+WORKDIR /
+CMD bun /index.ts
+`
+  const entry = path.join(import.meta.path, '..', '..', 'daemon', 'index.ts')
+  const image = 'dtdaemon'
+  await buildDockerImage(dockerfile, entry, image)
 }

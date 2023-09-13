@@ -4,10 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsx src/cli/cli.ts",
-    "daemon": "bun --watch src/daemon/daemon.ts",
-    "build": "bun run build.ts",
-    "preview": "bun run build && docker rm -f dtdaemon || true && docker run --name dtdaemon -v /var/run/docker.sock:/var/run/docker.sock -v dtdaemon:/config -d lowet84/dtdaemon"
+    "start": "tsx src/cli/index.ts",
+    "daemon": "bun --watch src/daemon/index.ts",
+    "apps": "bun run ./apps/bundle.ts"
   },
   "type": "module",
   "keywords": [],

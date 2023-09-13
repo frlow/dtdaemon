@@ -650,5 +650,6 @@
     "ingresses": {
       "duplicati": 8200
     }
-  }
+  },
+  "bundle": {}
 }
