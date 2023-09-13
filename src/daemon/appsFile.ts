@@ -1,19 +1,12 @@
 import * as fs from 'fs'
 import path from 'path'
 import YAML from 'yaml'
+import { AppDirectory } from '../types/AppDirectory'
 
-/**
- * @typedef {import('./types/AppDirectory.js').AppDirectory} AppDirectory
- */
-
-/**
- *
- * @returns {AppDirectory}
- */
 export const loadApps = () => {
   const appDir = './apps'
   const files = fs.readdirSync(appDir)
-  const appDirectory = {}
+  const appDirectory: AppDirectory = {}
   for (const file of files) {
     const filePath = path.join(appDir, file)
     const { name, ext } = path.parse(filePath)

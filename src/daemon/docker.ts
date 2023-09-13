@@ -1,47 +1,18 @@
-import { execCommand } from './exec.js'
-import { authService, traefikService } from './services.js'
+import { execCommand } from '../exec'
+import { authService, traefikService } from './services'
+import { Log } from '../types/Log'
+import { Config } from '../types/Config'
+import { Settings } from '../types/Settings'
+import { Ingress } from '../types/Ingress'
+import { ComposeSpecification, DefinitionsService } from '../types/Compose'
 
-/**
- * @typedef {import('./types/Settings.js').Settings} Settings
- * @typedef {import('./types/Compose.js').ComposeSpecification} ComposeSpecification
- * @typedef {import('./types/Compose.js').DefinitionsService} DefinitionsService
- * @typedef {import('./types/AppDirectory.js').AppConfig} AppConfig
- * @typedef {import('./types/AppDirectory.js').AppDirectory} AppDirectory
- * @typedef {Record<string, Record<string, string>>} InstalledApps
- * @typedef {{
- *   domain: string
- *   port: number
- *   service: string
- *   insecure?: boolean
- *   protocol?: 'http' | 'https'
- * }} Ingress
- * @typedef {{
- * settings: Settings,
- * installedApps: InstalledApps,
- * appDirectory: AppDirectory
- * }} ComposeConfig
- */
-
-/**
- *
- * @param {ComposeConfig} config
- * @param {string} id
- * @param {(msg: string)=>void} log
- * @returns {Promise<void>}
- */
-export const dockerLog = async (config, id, log) => {
+export const dockerLog = async (config: Config, id: string, log: Log) => {
   const compose = await generateCompose(config)
   const command = `docker compose -p dt -f - logs ${id}`
   await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
 }
 
-/**
- *
- * @param {ComposeConfig} config
- * @param {(msg: string)=>void} log
- * @returns {Promise<void>}
- */
-export const dockerInstall = async (config, log) => {
+export const dockerInstall = async (config: Config, log: Log) => {
   const compose = await generateCompose(config)
   const settings = config.settings
   const base64 = Buffer.from(JSON.stringify(compose)).toString('base64')
@@ -50,13 +21,8 @@ export const dockerInstall = async (config, log) => {
     log,
   )
 }
-/**
- *
- * @param {ComposeConfig} config
- * @param {(msg: string)=>void} log
- * @returns {Promise<void>}
- */
-export const dockerPull = async (config, log) => {
+
+export const dockerPull = async (config: Config, log: Log) => {
   const compose = await generateCompose(config)
   delete (compose.services || {})['auth']
   delete (compose.services || {})['dtdaemon']
@@ -65,43 +31,40 @@ export const dockerPull = async (config, log) => {
   await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
 }
 
-/**
- *
- * @param { ComposeConfig } config
- * @returns {Promise<ComposeSpecification>}
- */
-const generateCompose = async (config) => {
+const generateCompose = async (
+  config: Config,
+): Promise<ComposeSpecification> => {
   const settings = config.settings
   const installedApps = config.installedApps
   const installed = Object.entries(installedApps).flatMap(([id, variables]) => {
     const appConfig = getAppConfig(id, config)
     const services = appConfig.services
-    const ingresses = /** @type {Ingress[]} */ Object.entries(
-      appConfig.ingresses || {},
-    ).map(([id, value]) => {
-      if (typeof value === 'number')
-        return {
-          domain: id,
-          port: Math.abs(value),
-          service: id,
-          insecure: value < 0,
-        }
-      else
-        return {
-          domain: value.domain || id,
-          port: value.port,
-          service: id,
-          insecure: !!value.insecure,
-          protocol: value.protocol,
-        }
-    })
+    const ingresses: Ingress[] = Object.entries(appConfig.ingresses || {}).map(
+      ([id, value]: [id: string, value: any]) => {
+        if (typeof value === 'number')
+          return {
+            domain: id,
+            port: Math.abs(value),
+            service: id,
+            insecure: value < 0,
+          }
+        else
+          return {
+            domain: value.domain || id,
+            port: value.port,
+            service: id,
+            insecure: !!value.insecure,
+            protocol: value.protocol,
+          }
+      },
+    )
     for (const ingress of ingresses) {
       const service = services[ingress.service]
       applyIngress(service, ingress, settings)
     }
-    const ret = Object.entries(services)
-    ret.forEach((r) => (r[1].restart = 'always'))
-    const withVariables = ret.map(([key, service]) => [
+    const ret: any = Object.entries(services)
+    ret.forEach((r: any) => (r[1].restart = 'always'))
+    const withVariables = ret.map(([key, service]: any) => [
       key,
       replaceVariables(service, {
         username: settings.username,
@@ -126,9 +89,9 @@ const generateCompose = async (config) => {
   )
   const volumes = installed.reduce((acc, [key, value]) => {
     value.volumes
-      ?.filter((v) => !v.startsWith('/'))
-      .map((v) => v.split(':')[0].trim())
-      .forEach((nv) => (acc[nv] = {}))
+      ?.filter((v: any) => !v.startsWith('/'))
+      .map((v: any) => v.split(':')[0].trim())
+      .forEach((nv: any) => (acc[nv] = {}))
     return acc
   }, {})
   return {
@@ -137,13 +100,10 @@ const generateCompose = async (config) => {
   }
 }
 
-/**
- *
- * @param {DefinitionsService} service
- * @param {Record<string,string>} variables
- * @returns DefinitionsService
- */
-const replaceVariables = (service, variables) => {
+const replaceVariables = (
+  service: DefinitionsService,
+  variables: Record<string, string>,
+) => {
   let str = JSON.stringify(service)
   Object.entries(variables).forEach(([key, value]) => {
     const regexp = new RegExp(`{{${key}}}`, 'g')
@@ -152,14 +112,11 @@ const replaceVariables = (service, variables) => {
   return JSON.parse(str)
 }
 
-/**
- *
- * @param {DefinitionsService} service
- * @param {Ingress } ingress
- * @param {Settings} settings
- * @returns {DefinitionsService}
- */
-const applyIngress = (service, ingress, settings) => {
+const applyIngress = (
+  service: DefinitionsService,
+  ingress: Ingress,
+  settings: Settings,
+) => {
   service.labels = service.labels || ['traefik.enable=true']
   // @ts-ignore
   service.labels.push(
@@ -196,10 +153,5 @@ const applyIngress = (service, ingress, settings) => {
   return service
 }
 
-/**
- * @param { string } id
- * @param { ComposeConfig } config
- * @returns {AppConfig}
- */
-const getAppConfig = (id, config) =>
+const getAppConfig = (id: string, config: Config) =>
   JSON.parse(JSON.stringify(config.appDirectory[id]))

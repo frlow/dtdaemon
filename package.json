@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/cli/index.js",
-    "daemon": "bun src/daemon.js",
-    "build": "bun run build.js"
+    "start": "tsx src/cli/index.ts",
+    "daemon": "bun --watch src/daemon/index.ts",
+    "build": "bun run build.ts",
+    "preview": "bun run build && docker rm -f dtdaemon || true && docker run --name dtdaemon -v /var/run/docker.sock:/var/run/docker.sock -v dtdaemon:/config -d lowet84/dtdaemon"
   },
   "type": "module",
   "keywords": [],
@@ -15,7 +16,11 @@
   "devDependencies": {
     "prettier": "^3.0.3",
     "@types/node": "^20.5.9",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "bun-types": "^1.0.1",
+    "@types/inquirer": "^9.0.3",
+    "concurrently": "^8.2.1",
+    "tsx": "^3.12.9"
   },
   "dependencies": {
     "yaml": "^2.3.2",

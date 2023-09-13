@@ -1,16 +1,13 @@
 import { spawn } from 'child_process'
+import { Log } from './types/Log'
 
-/**
- *
- * @param {string} command
- * @param {(string)=>void} log
- * @param {undefined} log
- * @returns {Promise<string>}
- */
-export const execCommand = async (command, log = console.log) =>
+export const execCommand = async (
+  command: string,
+  log: Log = console.log,
+): Promise<string> =>
   await new Promise((resolve) => {
     let totalLog = ''
-    const writeLog = (str) => {
+    const writeLog = (str: string) => {
       log(str)
       totalLog += str
     }

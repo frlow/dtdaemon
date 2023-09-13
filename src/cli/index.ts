@@ -13,9 +13,10 @@ import {
 } from './api.js'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
+import { Settings } from '../types/Settings'
+import { init, daemonStatus } from './init'
 
-const prompts = () => {
-  const settings = getSettings()
+const prompts = async (settings: Settings) => {
   return {
     username: {
       type: 'input',
@@ -31,7 +32,7 @@ const prompts = () => {
       type: 'password',
       default: settings.password || undefined,
       message: 'Repeat password:',
-      validate(input, answers) {
+      validate(input: string, answers: any) {
         const same = input === answers.password
         if (!same) console.log('Passwords do not match')
         return same
@@ -51,11 +52,6 @@ const prompts = () => {
         { name: 'Http', value: true },
       ],
     },
-    // project: {
-    //   type: 'input',
-    //   message: 'Project name:',
-    //   default: settings.username || 'apps',
-    // },
     appDirectory: {
       type: 'input',
       message: 'App directory url:',
@@ -63,22 +59,21 @@ const prompts = () => {
         settings.appDirectory ||
         'https://raw.githubusercontent.com/frlow/dtdaemon/main/appDirectory.json',
     },
-  }
+  } as Record<string, any>
 }
 
-if (!getSettings().domain) {
+if ((await daemonStatus()) !== 200) {
   const result = await inquirer.prompt(
-    Object.entries(prompts()).map(([name, value]) => ({
+    Object.entries(await prompts({} as any)).map(([name, value]) => ({
       name,
       ...value,
     })),
   )
-  saveSettings(result)
-  await update()
+  await init(result)
 }
 
 while (true) {
-  const settings = getSettings()
+  const settings = await getSettings()
   const result = await inquirer.prompt([
     {
       name: 'command',
@@ -97,11 +92,12 @@ while (true) {
           default: 'setup',
           message: 'What setting do you want to change?',
           choices: Reflect.ownKeys(settings).filter(
-            (key) => !['repeat'].includes(key),
+            (key) => !['repeat'].includes(key as string),
           ),
         },
       ])
-      const promptsTemp = prompts()
+      const key = keyResults.key as string
+      const promptsTemp = await prompts(settings)
       const valuePrompts =
         keyResults.key === 'password'
           ? [
@@ -111,12 +107,12 @@ while (true) {
                 name: 'repeat',
               },
             ]
-          : [{ ...promptsTemp[keyResults.key], name: keyResults.key }]
+          : [{ ...promptsTemp[key], name: key }]
       const valueResults = await inquirer.prompt(valuePrompts)
-      saveSettings({
+      await saveSettings({
         ...settings,
         [keyResults.key]: valueResults[keyResults.key],
-      })
+      } as unknown as Settings)
       await update()
       break
     case 'update':
@@ -169,7 +165,7 @@ while (true) {
       } else if (manageResult.command === 'install') {
         const variables = meta.variables
           ? await inquirer.prompt(
-              meta.variables.map((variable) => ({
+              meta.variables.map((variable: string) => ({
                 message: `Variable: ${variable}:`,
                 name: variable,
                 type: 'input',

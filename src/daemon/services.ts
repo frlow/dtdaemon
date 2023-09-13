@@ -1,14 +1,6 @@
-/**
- * @typedef {import('./types/Compose.js').DefinitionsService} DefinitionsService
- * @typedef {import('./types/Settings.js').Settings} Settings
- */
+import { Settings } from '../types/Settings'
 
-/**
- *
- * @param {boolean} insecure
- * @returns {DefinitionsService}
- */
-export const traefikService = (insecure) => {
+export const traefikService = (insecure: boolean) => {
   const traefik = {
     image: 'traefik',
     ports: ['80:80', '443:443'],
@@ -35,12 +27,7 @@ export const traefikService = (insecure) => {
   return traefik
 }
 
-/**
- *
- * @param {Settings} settings
- * @returns {DefinitionsService}
- */
-export const authService = (settings) => {
+export const authService = (settings: Settings) => {
   const service = {
     image: 'simple-auth',
     restart: 'always',
@@ -63,12 +50,7 @@ export const authService = (settings) => {
   return service
 }
 
-/**
- *
- * @param {Settings} settings
- * @returns {DefinitionsService}
- */
-export const daemonService = (settings) => {
+export const daemonService = (settings: Settings) => {
   const service = {
     image: 'dtdaemon',
     restart: 'always',

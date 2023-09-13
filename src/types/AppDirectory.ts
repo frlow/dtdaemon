@@ -12,7 +12,7 @@ export type IngressConfig =
 export type AppConfig = {
   description?: string
   ingresses?: Record<string, IngressConfig>
-  services: PropertiesServices
+  services?: PropertiesServices
   variables?: string[]
   installed?: boolean
   logoImage?: string
