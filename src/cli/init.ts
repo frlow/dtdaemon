@@ -31,7 +31,7 @@ const buildDockerImage = async (
   entry: string,
   image: string,
 ) => {
-  const tempdir = './dockertemp'
+  const tempdir = path.join(process.cwd(), 'dockertemp')
   if (fs.existsSync(tempdir)) fs.rmSync(tempdir, { recursive: true })
   fs.mkdirSync(tempdir)
   fs.writeFileSync(path.join(tempdir, 'Dockerfile'), dockerfile, 'utf8')
@@ -41,16 +41,16 @@ const buildDockerImage = async (
     minify: false,
   }).then((r) => r.outputs[0].text())
   fs.writeFileSync(path.join(tempdir, 'index.js'), code, 'utf8')
-  await execCommand(`cd ${tempdir} && docker buildx build -t ${image} .`)
-  fs.rmSync('./dockertemp', { recursive: true })
+  await execCommand(`cd ${tempdir} && docker buildx build -t ${image} .`).result
+  fs.rmSync(tempdir, { recursive: true })
 }
 
 const buildAuthImage = async () => {
   const dockerfile = `FROM oven/bun
-  ADD index.js /index.js
-  WORKDIR /
-  EXPOSE 3000
-  CMD bun run /index.js`
+ADD index.js /index.js
+WORKDIR /
+EXPOSE 3000
+CMD bun run /index.js`
   const entry = path.join(import.meta.path, '..', '..', 'login', 'index.ts')
   const image = 'simple-auth'
   await buildDockerImage(dockerfile, entry, image)

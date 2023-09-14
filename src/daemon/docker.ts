@@ -47,8 +47,10 @@ export const dockerPull = async (config: Config, log: Log) => {
   const compose = await generateCompose(config)
   delete (compose.services || {})['auth']
   delete (compose.services || {})['dtdaemon']
+  console.log(compose)
   await pullAll({
     configAsString: JSON.stringify(compose),
+    composeOptions: ['-p', 'dt'],
     callback: (chunk) => log(Buffer.from(chunk).toString('utf8')),
   })
 }

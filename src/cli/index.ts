@@ -5,9 +5,7 @@ import terminalImage from 'terminal-image'
 import { Settings } from '../types/Settings'
 import { init } from './init'
 
-const client = createClient('http://127.0.0.1:8466', (msg) =>
-  console.log('dt: ', msg),
-)
+const client = createClient('http://127.0.0.1:8466', console.log)
 
 const keypress = async () =>
   new Promise((r) => {
@@ -70,6 +68,7 @@ if ((await client.status()) !== 200) {
     })),
   )
   await init(client, result)
+  await client.update()
 }
 
 while (true) {

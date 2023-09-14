@@ -58,6 +58,7 @@ const app = new Elysia()
           while (true) {
             const next = await log.next()
             if (!next) break
+            console.log(next)
             controller.write(next)
             controller.flush()
             await Bun.sleep(1000)
@@ -74,6 +75,7 @@ const app = new Elysia()
         type: 'direct',
         async pull(controller: ReadableStreamDirectController) {
           await dockerInstall(await getConfig(), (msg) => {
+            console.log(msg)
             controller.write(msg)
             controller.flush()
           })
@@ -84,11 +86,13 @@ const app = new Elysia()
     )
   })
   .post('/pull', async ({ request }) => {
+    console.log('pull')
     return new Response(
       new ReadableStream({
         type: 'direct',
         async pull(controller: ReadableStreamDirectController) {
           await dockerPull(await getConfig(), (msg) => {
+            console.log(msg)
             controller.write(msg)
             controller.flush()
           })

@@ -7,7 +7,8 @@
     "start": "tsx src/cli/index.ts",
     "daemon": "bun --watch src/daemon/index.ts",
     "apps": "bun run ./apps/bundle.ts",
-    "purge": "docker rm -f $(docker ps -a -q) || echo && docker volume rm $(docker volume ls -q) || echo  && docker rmi -f $(docker image ls -q) || echo"
+    "purge": "docker rm -f $(docker ps -a -q) || echo && docker volume rm $(docker volume ls -q) || echo  && docker rmi -f $(docker image ls -q) || echo",
+    "preview": "npm pack && npm i -g dtdaemon* && rm dtdaemon* && dtdaemon"
   },
   "type": "module",
   "keywords": [],
@@ -31,15 +32,8 @@
     "nanoid": "^4.0.2",
     "docker-compose": "^0.24.2"
   },
-  "bin": "src/cli/index.js",
-  "exports": {
-    ".": {
-      "import": "./src/index.js",
-      "types": "./src/index.d.ts"
-    }
-  },
+  "bin": "src/cli/index.ts",
   "engines": {
     "node": ">=16.8"
-  },
-  "files": ["src"]
+  }
 }
