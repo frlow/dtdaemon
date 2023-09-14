@@ -14,6 +14,7 @@ export const traefikService = (insecure: boolean) => {
       '--entrypoints.web.address=:80',
       '--serverstransport.insecureskipverify=true',
     ],
+    networks: ['default','dtdaemon']
   }
   if (!insecure)
     traefik.command.push(
