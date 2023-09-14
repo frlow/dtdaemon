@@ -117,9 +117,11 @@ const generateCompose = async (
       .forEach((nv: any) => (acc[nv] = {}))
     return acc
   }, {})
+  const networks = {default: {}, dtdaemon: {external: true}}
   return {
     services,
     volumes,
+    networks
   }
 }
 
