@@ -2,13 +2,14 @@
   "name": "dtdaemon",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/api.js",
   "scripts": {
     "start": "tsx src/cli/index.ts",
     "daemon": "bun --watch src/daemon/index.ts",
     "apps": "bun run ./apps/bundle.ts",
     "purge": "docker rm -f $(docker ps -a -q) || echo && docker volume rm $(docker volume ls -q) || echo  && docker rmi -f $(docker image ls -q) || echo",
-    "preview": "npm pack && npm i -g dtdaemon* && rm dtdaemon* && dtdaemon"
+    "preview": "npm pack && npm i -g dtdaemon* && rm dtdaemon* && dtdaemon",
+    "build": "tsc src/api.ts --outdir dist --target es2020 --module es2020 --declaration --moduleResolution node"
   },
   "type": "module",
   "keywords": [],
