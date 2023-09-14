@@ -3,8 +3,11 @@ import {createClient} from '../api'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
 import {Settings} from '../types/Settings'
-import {buildImages, init, initDaemon} from './init'
+import {init, initDaemon} from './init'
+import path from "path";
 
+const version = (await Bun.file(path.join(import.meta.path, '..', '..', '..', 'package.json')).json()).version
+console.log(`dtdaemon version: ${version}`)
 let client = createClient('http://127.0.0.1:8466', console.log)
 
 const keypress = async () =>
