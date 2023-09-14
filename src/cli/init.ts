@@ -9,19 +9,23 @@ export const buildImages = async () => {
   await buildDaemonImage()
 }
 
+export const initDaemon = async (client: Client)=>{
+  await buildImages()
+  await execCommand('docker network create dtdaemon').result
+  await execCommand('docker rm -f dtdaemon').result
+  await execCommand(
+      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v dtdaemon:/config -p 8466:8466 --net dtdaemon --name dtdaemon dtdaemon`,
+  ).result
+  while (true) {
+    console.log('Connecting to daemon...')
+    if (await client.status()) break
+    await new Promise((r) => setTimeout(() => r(''), 1000))
+  }
+}
+
 export const init = async (client: Client, settings: Settings) => {
   if (!(await client.status())) {
-    await buildImages()
-    await execCommand('docker network create dtdaemon')
-    await execCommand('docker rm -f dtdaemon')
-    await execCommand(
-      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8466:8466 --net dtdaemon --name dtdaemon dtdaemon`,
-    )
-    while (true) {
-      console.log('Connecting to daemon...')
-      if (await client.status()) break
-      await new Promise((r) => setTimeout(() => r(''), 1000))
-    }
+    await initDaemon(client)
   }
   await client.saveSettings(settings)
 }
