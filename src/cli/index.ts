@@ -77,22 +77,19 @@ while (true) {
         {
             name: 'command',
             type: 'list',
-            default: 'setup',
             message: 'What do you want to do?',
             choices: ['settings', 'update', 'apps', 'pull', 'rebuild', 'exit'],
         },
     ])
+    await Bun.sleep(10)
     switch (result.command) {
         case 'settings':
             const keyResults = await inquirer.prompt([
                 {
                     name: 'key',
                     type: 'list',
-                    default: 'setup',
                     message: 'What setting do you want to change?',
-                    choices: Reflect.ownKeys(settings).filter(
-                        (key) => !['repeat'].includes(key as string),
-                    ),
+                    choices: ["username", "password", "domain", "insecure", "appDirectory"],
                 },
             ])
             const key = keyResults.key as string
