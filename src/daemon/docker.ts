@@ -1,34 +1,56 @@
-import { execCommand } from '../exec'
 import { authService, traefikService } from './services'
 import { Log } from '../types/Log'
 import { Config } from '../types/Config'
 import { Settings } from '../types/Settings'
 import { Ingress } from '../types/Ingress'
 import { ComposeSpecification, DefinitionsService } from '../types/Compose'
+import { upAll, pullAll, logs } from 'docker-compose/dist/v2'
+import { execCommand } from '../exec'
 
-export const dockerLog = async (config: Config, id: string, log: Log) => {
-  const compose = await generateCompose(config)
-  const command = `docker compose -p dt -f - logs ${id}`
-  await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
+export const dockerLog = (config: Config, id: string) => {
+  const queue: string[] = []
+  let resolve: ((value: any) => void) | undefined
+
+  let closed = false
+  const log = (msg: string) => {
+    if (resolve) {
+      resolve(msg)
+      resolve = undefined
+    } else queue.push(msg)
+  }
+
+  const { cancel } = execCommand(`docker logs dt-${id}-1 -f`, log)
+
+  const next = async (): Promise<string | undefined> => {
+    if (closed) return undefined
+    if (queue.length > 0) return queue.shift()
+    return new Promise<string>((r) => (resolve = r))
+  }
+  const close = () => {
+    cancel()
+    closed = true
+    resolve && resolve(undefined)
+  }
+  return { next, close }
 }
 
 export const dockerInstall = async (config: Config, log: Log) => {
-  const compose = await generateCompose(config)
-  const settings = config.settings
-  const base64 = Buffer.from(JSON.stringify(compose)).toString('base64')
-  await execCommand(
-    `echo ${base64} | base64 -d | docker compose -p dt -f - up -d --remove-orphans`,
-    log,
-  )
+  await upAll({
+    configAsString: JSON.stringify(await generateCompose(config)),
+    composeOptions: ['-p', 'dt'],
+    commandOptions: ['--remove-orphans'],
+    callback: (chunk) => log(Buffer.from(chunk).toString('utf8')),
+  })
 }
 
 export const dockerPull = async (config: Config, log: Log) => {
   const compose = await generateCompose(config)
   delete (compose.services || {})['auth']
   delete (compose.services || {})['dtdaemon']
-  const settings = config.settings
-  const command = `docker compose -p dt -f - pull`
-  await execCommand(`echo '${JSON.stringify(compose)}' | ${command}`, log)
+  await pullAll({
+    configAsString: JSON.stringify(compose),
+    callback: (chunk) => log(Buffer.from(chunk).toString('utf8')),
+  })
 }
 
 const generateCompose = async (
@@ -82,7 +104,6 @@ const generateCompose = async (
   )
   installed.push(['traefik', traefik])
   installed.push(['auth', authService(settings)])
-  // installed.push(['templates', templatesService(settings)])
   const services = installed.reduce(
     (acc, [key, value]) => ({ ...acc, [key]: value }),
     {},

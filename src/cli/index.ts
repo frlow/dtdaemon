@@ -1,20 +1,20 @@
-#!/usr/bin/env node
-import {
-  getSettings,
-  listApps,
-  update,
-  saveSettings,
-  getAppMetadata,
-  getAppLogo,
-  removeApp,
-  installApp,
-  pull,
-  log,
-} from './api.js'
+#!/usr/bin/env bun
+import { createClient } from '../api'
 import inquirer from 'inquirer'
 import terminalImage from 'terminal-image'
 import { Settings } from '../types/Settings'
-import { init, daemonStatus } from './init'
+import { init } from './init'
+
+const client = createClient('http://127.0.0.1:8466', (msg) =>
+  console.log('dt: ', msg),
+)
+
+const keypress = async () =>
+  new Promise((r) => {
+    process.stdin.setRawMode(true)
+    process.stdin.resume()
+    process.stdin.on('data', () => r(''))
+  })
 
 const prompts = async (settings: Settings) => {
   return {
@@ -62,18 +62,18 @@ const prompts = async (settings: Settings) => {
   } as Record<string, any>
 }
 
-if ((await daemonStatus()) !== 200) {
+if ((await client.status()) !== 200) {
   const result = await inquirer.prompt(
     Object.entries(await prompts({} as any)).map(([name, value]) => ({
       name,
       ...value,
     })),
   )
-  await init(result)
+  await init(client, result)
 }
 
 while (true) {
-  const settings = await getSettings()
+  const settings = await client.getSettings()
   const result = await inquirer.prompt([
     {
       name: 'command',
@@ -109,17 +109,17 @@ while (true) {
             ]
           : [{ ...promptsTemp[key], name: key }]
       const valueResults = await inquirer.prompt(valuePrompts)
-      await saveSettings({
+      await client.saveSettings({
         ...settings,
         [keyResults.key]: valueResults[keyResults.key],
       } as unknown as Settings)
-      await update()
+      await client.update()
       break
     case 'update':
-      await update()
+      await client.update()
       break
     case 'apps':
-      const apps = await listApps()
+      const apps = await client.listApps()
       const appResult = await inquirer.prompt([
         {
           name: 'app',
@@ -133,8 +133,8 @@ while (true) {
             })),
         },
       ])
-      const meta = await getAppMetadata(appResult.app)
-      const image = await getAppLogo(appResult.app)
+      const meta = await client.getAppMetadata(appResult.app)
+      const image = await client.getAppLogo(appResult.app)
       console.log(
         await terminalImage.buffer(Buffer.from(image, 'base64'), {
           height: 20,
@@ -160,8 +160,8 @@ while (true) {
           }
       const manageResult = await inquirer.prompt([prompt])
       if (manageResult.command === 'uninstall') {
-        await removeApp(appResult.app)
-        await update()
+        await client.removeApp(appResult.app)
+        await client.update()
       } else if (manageResult.command === 'install') {
         const variables = meta.variables
           ? await inquirer.prompt(
@@ -172,15 +172,19 @@ while (true) {
               })),
             )
           : {}
-        await installApp(appResult.app, variables)
-        await update()
+        await client.installApp(appResult.app, variables)
+        await client.update()
       } else if (manageResult.command === 'log') {
-        console.log(await log(appResult.app))
+        const closeLog = await client.log(appResult.app)
+        if (closeLog) {
+          await keypress()
+          closeLog()
+        }
       }
       break
     case 'pull':
-      await pull()
-      await update()
+      await client.pull()
+      await client.update()
       break
     case 'exit':
       process.exit(0)

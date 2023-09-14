@@ -1,19 +1,16 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { execCommand } from '../exec'
 import { Settings } from '../types/Settings'
-import { daemonHostUrl, saveSettings } from './api'
-
-export const daemonStatus = async () =>
-  (await fetch(daemonHostUrl).catch(() => undefined))?.status
+import { Client } from '../api'
+import { execCommand } from '../exec'
 
 export const buildImages = async () => {
   await buildAuthImage()
   await buildDaemonImage()
 }
 
-export const init = async (settings: Settings) => {
-  if (!(await daemonStatus())) {
+export const init = async (client: Client, settings: Settings) => {
+  if (!(await client.status())) {
     await buildImages()
     await execCommand('docker network create dtdaemon')
     await execCommand('docker rm -f dtdaemon')
@@ -22,11 +19,11 @@ export const init = async (settings: Settings) => {
     )
     while (true) {
       console.log('Connecting to daemon...')
-      if (await daemonStatus()) break
+      if (await client.status()) break
       await new Promise((r) => setTimeout(() => r(''), 1000))
     }
   }
-  await saveSettings(settings)
+  await client.saveSettings(settings)
 }
 
 const buildDockerImage = async (
