@@ -8,7 +8,7 @@ import path from "path";
 
 const version = (await Bun.file(path.join(import.meta.path, '..', '..', '..', 'package.json')).json()).version
 console.log(`dtdaemon version: ${version}`)
-let client = createClient('http://127.0.0.1:8466', console.log)
+let client = createClient('http://127.0.0.1:8466')
 
 const keypress = async () =>
     new Promise((r) => {
@@ -71,7 +71,7 @@ if ((await client.status()) !== 200) {
         })),
     )
     await init(client, result)
-    await client.update()
+    await client.update(console.log)
 }
 
 while (true) {
@@ -112,10 +112,10 @@ while (true) {
                 ...settings,
                 [keyResults.key]: valueResults[keyResults.key],
             } as unknown as Settings)
-            await client.update()
+            await client.update(console.log)
             break
         case 'update':
-            await client.update()
+            await client.update(console.log)
             break
         case 'apps':
             const apps = await client.listApps()
@@ -160,7 +160,7 @@ while (true) {
             const manageResult = await inquirer.prompt([prompt])
             if (manageResult.command === 'uninstall') {
                 await client.removeApp(appResult.app)
-                await client.update()
+                await client.update(console.log)
             } else if (manageResult.command === 'install') {
                 const variables = meta.variables
                     ? await inquirer.prompt(
@@ -172,9 +172,9 @@ while (true) {
                     )
                     : {}
                 await client.installApp(appResult.app, variables)
-                await client.update()
+                await client.update(console.log)
             } else if (manageResult.command === 'log') {
-                const closeLog = await client.log(appResult.app)
+                const closeLog = await client.log(appResult.app, console.log)
                 if (closeLog) {
                     await keypress()
                     closeLog()
@@ -182,12 +182,12 @@ while (true) {
             }
             break
         case 'pull':
-            await client.pull()
-            await client.update()
+            await client.pull(console.log)
+            await client.update(console.log)
             break
         case 'rebuild':
             await initDaemon(client)
-            await client.update()
+            await client.update(console.log)
             break
         case 'exit':
             process.exit(0)

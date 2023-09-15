@@ -3,10 +3,10 @@ import { AppConfig } from './types/AppDirectory'
 import { Log } from './types/Log'
 
 export type Client = ReturnType<typeof createClient>
-export const createClient = (daemonHostUrl: string, log: Log) => ({
+export const createClient = (daemonHostUrl: string) => ({
   status: async () =>
     (await fetch(daemonHostUrl).catch(() => undefined))?.status,
-  pull: async () => {
+  pull: async (log: Log) => {
     const response = await fetch(`${daemonHostUrl}/pull`, { method: 'POST' })
     const reader = response.body?.getReader()
     if (!reader) return
@@ -17,7 +17,7 @@ export const createClient = (daemonHostUrl: string, log: Log) => ({
     }
   },
 
-  log: async (name: string) => {
+  log: async (name: string, log: Log) => {
     const response = await fetch(`${daemonHostUrl}/apps/${name}/log`)
     const reader = response.body?.getReader()
     if (!reader) return undefined
@@ -31,7 +31,7 @@ export const createClient = (daemonHostUrl: string, log: Log) => ({
     return () => reader.cancel()
   },
 
-  update: async () => {
+  update: async (log: Log) => {
     const response = await fetch(`${daemonHostUrl}/update`, { method: 'POST' })
     const reader = response.body?.getReader()
     if (!reader) return
