@@ -84,7 +84,7 @@ const app = new Elysia()
                 console.log(msg)
                 controller.write(msg)
                 controller.flush()
-              })
+              }).catch(()=>{busy=false})
               controller.close()
               busy = false
             },
@@ -103,7 +103,7 @@ const app = new Elysia()
                 console.log(msg)
                 controller.write(msg)
                 controller.flush()
-              })
+              }).catch(()=>{busy=false})
               controller.close()
               busy = false
             },
