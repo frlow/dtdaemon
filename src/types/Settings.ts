@@ -4,6 +4,6 @@ export type Settings = {
   domain: string
   insecure: boolean
   // image: string
-  // project: string
+  project: string
   appDirectory: string
 }

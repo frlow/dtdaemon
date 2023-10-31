@@ -44,6 +44,11 @@ const prompts = async (settings: Settings) => {
             default: settings.domain || undefined,
             message: 'Enter a domain name:',
         },
+        project: {
+            type: 'input',
+            default: settings.project || "dt",
+            message: 'Enter a project name:',
+        },
         insecure: {
             type: 'list',
             default: settings.insecure || 'https',

@@ -37,7 +37,7 @@ export const dockerLog = (config: Config, id: string) => {
 export const dockerInstall = async (config: Config, log: Log) => {
   await upAll({
     configAsString: JSON.stringify(await generateCompose(config)),
-    composeOptions: ['-p', 'dt'],
+    composeOptions: ['-p', config.settings.project],
     commandOptions: ['--remove-orphans'],
     callback: (chunk) => log(Buffer.from(chunk).toString('utf8')),
   })
@@ -50,7 +50,7 @@ export const dockerPull = async (config: Config, log: Log) => {
   console.log(compose)
   await pullAll({
     configAsString: JSON.stringify(compose),
-    composeOptions: ['-p', 'dt'],
+    composeOptions: ['-p', config.settings.project],
     callback: (chunk) => log(Buffer.from(chunk).toString('utf8')),
   })
 }
