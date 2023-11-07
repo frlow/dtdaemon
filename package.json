@@ -1,6 +1,6 @@
 {
   "name": "dtdaemon",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "dist/api.js",
   "scripts": {
@@ -31,7 +31,8 @@
     "elysia": "^0.6.23",
     "@elysiajs/cookie": "^0.6.1",
     "nanoid": "^4.0.2",
-    "docker-compose": "^0.24.2"
+    "docker-compose": "^0.24.2",
+    "bun": "^1.0.10"
   },
   "bin": "src/cli/index.ts",
   "engines": {

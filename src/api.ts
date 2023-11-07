@@ -6,18 +6,11 @@ export type Client = ReturnType<typeof createClient>
 export const createClient = (daemonHostUrl: string) => ({
   status: async () =>
     (await fetch(daemonHostUrl).catch(() => undefined))?.status as number,
-  pull: async (log: Log) => {
-    const response = await fetch(`${daemonHostUrl}/pull`, { method: 'POST' })
-    const reader = response.body?.getReader()
-    if (!reader) return
-    while (true) {
-      const { value, done } = await reader.read()
-      if (done) break
-      log(Buffer.from(value).toString('utf8'))
-    }
+  pull: async () => {
+    await fetch(`${daemonHostUrl}/pull`, { method: 'POST' })
   },
 
-  log: async (name: string, log: Log) => {
+  appLog: async (name: string, log: Log) => {
     const response = await fetch(`${daemonHostUrl}/apps/${name}/log`)
     const reader = response.body?.getReader()
     if (!reader) return undefined
@@ -31,15 +24,8 @@ export const createClient = (daemonHostUrl: string) => ({
     return () => reader.cancel()
   },
 
-  update: async (log: Log) => {
-    const response = await fetch(`${daemonHostUrl}/update`, { method: 'POST' })
-    const reader = response.body?.getReader()
-    if (!reader) return
-    while (true) {
-      const { value, done } = await reader.read()
-      if (done) break
-      log(Buffer.from(value).toString('utf8'))
-    }
+  update: async () => {
+    await fetch(`${daemonHostUrl}/update`, { method: 'POST' })
   },
 
   removeApp: async (name: string) =>
@@ -71,5 +57,4 @@ export const createClient = (daemonHostUrl: string) => ({
       body: JSON.stringify(settings),
     })
   },
-  busy: async () => await fetch(`${daemonHostUrl}/busy`),
 })

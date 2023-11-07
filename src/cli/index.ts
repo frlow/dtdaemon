@@ -76,9 +76,10 @@ if ((await client.status()) !== 200) {
       })),
   )
   await init(client, result)
-  await client.update(console.log)
+  await client.update()
 }
 
+console.log("log is available on http://localhost:8466/log")
 while (true) {
   const settings = await client.getSettings()
   const result = await inquirer.prompt([
@@ -117,10 +118,10 @@ while (true) {
         ...settings,
         [keyResults.key]: valueResults[keyResults.key],
       } as unknown as Settings)
-      await client.update(console.log)
+      await client.update()
       break
     case 'update':
-      await client.update(console.log)
+      await client.update()
       break
     case 'apps':
       const apps = await client.listApps()
@@ -165,7 +166,7 @@ while (true) {
       const manageResult = await inquirer.prompt([prompt])
       if (manageResult.command === 'uninstall') {
         await client.removeApp(appResult.app)
-        await client.update(console.log)
+        await client.update()
       } else if (manageResult.command === 'install') {
         const variables = meta.variables
             ? await inquirer.prompt(
@@ -177,9 +178,9 @@ while (true) {
             )
             : {}
         await client.installApp(appResult.app, variables)
-        await client.update(console.log)
+        await client.update()
       } else if (manageResult.command === 'log') {
-        const closeLog = await client.log(appResult.app, console.log)
+        const closeLog = await client.appLog(appResult.app, console.log)
         if (closeLog) {
           await keypress()
           closeLog()
@@ -187,12 +188,12 @@ while (true) {
       }
       break
     case 'pull':
-      await client.pull(console.log)
-      await client.update(console.log)
+      await client.pull()
+      await client.update()
       break
     case 'rebuild':
       await initDaemon(client)
-      await client.update(console.log)
+      await client.update()
       break
     case 'exit':
       process.exit(0)

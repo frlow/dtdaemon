@@ -137,8 +137,6 @@ const app = new Elysia()
           new ReadableStream({
             type: 'direct',
             async pull(controller: ReadableStreamDirectController) {
-              controller.write("Hello!")
-              controller.flush()
               controller.write(log.join("\n"))
               controller.flush()
               while (!done) {
