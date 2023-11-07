@@ -1,5 +1,5 @@
 services:
-  duplicato:
+  duplicati:
     image: lscr.io/linuxserver/duplicati
     environment:
       - PUID=1000

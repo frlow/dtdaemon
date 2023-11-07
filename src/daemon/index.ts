@@ -10,14 +10,43 @@ import {
 } from './apps'
 import {dockerInstall, dockerLog, dockerPull} from './docker'
 
-let busy = false
+const logListeners: ((msg: string) => void)[] = []
+const log: string[] = []
+const appendToLog = (msg: string) => {
+  if (log.length > 1000) log.shift()
+  log.push(msg)
+  while (logListeners.length > 0) {
+    const ll = logListeners.shift()
+    if (!ll) break
+    ll(msg)
+  }
+}
+
+const queue: (() => Promise<void>)[] = []
+let queueStarter: (() => void) | undefined
+const startQueue = async () => {
+  while (true) {
+    if (queue.length === 0) await new Promise((r: any) => queueStarter = r)
+    queueStarter = undefined
+    const current = queue.shift()
+    if (!current) continue
+    await current().catch(e=>appendToLog(e))
+  }
+}
+startQueue().then()
+const appendToQueue = (func: () => Promise<any>) => {
+  queue.push(func)
+  if (queueStarter) queueStarter()
+}
+
+
 const app = new Elysia()
+    // Check if daemon is available and ready
     .get('/', ({set}) => {
-      set.status = busy ? 503 : !!getSettings().domain ? 200 : 204
+      set.status = getSettings().domain ? 200 : 204
     })
-    .get('/busy', async () => {
-      while (busy) await Bun.sleep(50)
-    })
+
+    // Get and update settings
     .get('/settings', ({set}) => {
       set.headers = {
         'content-type': 'application/json',
@@ -32,6 +61,8 @@ const app = new Elysia()
         },
         {type: 'application/json'},
     )
+
+    // List apps
     .get('/apps', async ({set}) => {
       set.headers = {
         'content-type': 'application/json',
@@ -39,23 +70,32 @@ const app = new Elysia()
       const apps = Object.entries(
           await listApps()).map(([name, value]) =>
           ({name, ...value}))
-      apps.sort((a,b)=>a.name.localeCompare(b.name))
+      apps.sort((a, b) => a.name.localeCompare(b.name))
       return JSON.stringify(apps)
     })
+
+    // App metadata
     .get('/apps/:id', async ({set, params}) => {
       set.headers = {
         'content-type': 'application/json',
       }
       return JSON.stringify(await getAppMetadata(params.id))
     })
+
+    // App logo
     .get('/apps/:id/logo', async ({params}) => {
       return JSON.stringify(await getAppLogo(params.id))
     })
+
+    // Install and uninstall apps
     .post(
         '/apps/:id',
         async ({params, body}) => await installApp(params.id, body as any),
         {type: 'application/json'},
     )
+    .delete('/apps/:id', async ({params}) => await removeApp(params.id))
+
+    // Get app log
     .get('/apps/:id/log', async ({request, params}) => {
       const log = dockerLog(await getConfig(), params.id)
       request.signal.addEventListener('abort', () => log.close())
@@ -66,7 +106,6 @@ const app = new Elysia()
               while (true) {
                 const next = await log.next()
                 if (!next) break
-                console.log(next)
                 controller.write(next)
                 controller.flush()
                 await Bun.sleep(1000)
@@ -77,49 +116,42 @@ const app = new Elysia()
           {status: 200, headers: {'Content-Type': 'text/event-stream'}},
       )
     })
+
+    // Update install state, perform install and uninstall
     .post('/update', async () => {
-      if (busy) return new Response(undefined, {status: 503})
-      return new Response(
-          new ReadableStream({
-            type: 'direct',
-            async pull(controller: ReadableStreamDirectController) {
-              busy = true
-              await dockerInstall(await getConfig(), (msg) => {
-                console.log(msg)
-                controller.write(msg)
-                controller.flush()
-              }).catch(() => {
-                busy = false
-              })
-              controller.close()
-              busy = false
-            },
-          }),
-          {status: 200, headers: {'Content-Type': 'text/event-stream'}},
-      )
+      const config = await getConfig()
+      appendToQueue(async () => await dockerInstall(config, appendToLog))
     })
+
+    // Pull all images
     .post('/pull', async () => {
-      if (busy) return new Response(undefined, {status: 503})
+      const config = await getConfig()
+      appendToQueue(async () => await dockerPull(config, appendToLog))
+    })
+
+    // Server log
+    .get("/log", ({request}) => {
+      request.signal.addEventListener('abort', () => done = true)
+      let done = false
       return new Response(
           new ReadableStream({
             type: 'direct',
             async pull(controller: ReadableStreamDirectController) {
-              busy = true
-              await dockerPull(await getConfig(), (msg) => {
-                console.log(msg)
-                controller.write(msg)
+              controller.write("Hello!")
+              controller.flush()
+              controller.write(log.join("\n"))
+              controller.flush()
+              while (!done) {
+                const logLine = await new Promise((r: (msg: string) => void) => logListeners.push(r))
+                controller.write(logLine)
                 controller.flush()
-              }).catch(() => {
-                busy = false
-              })
+              }
               controller.close()
-              busy = false
             },
           }),
           {status: 200, headers: {'Content-Type': 'text/event-stream'}},
       )
     })
-    .delete('/apps/:id', async ({params}) => await removeApp(params.id))
     .listen(8466)
 
 console.log(

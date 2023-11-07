@@ -8,7 +8,6 @@ const settingsPath = './config/settings.json'
 const installedAppsPath = './config/apps.json'
 
 export const getConfig = async () => {
-  console.log(path.resolve(settingsPath))
   const settings = getSettings()
   const installedApps = getInstalledApps()
   const appDirectory = await getAppDirectory(settings.appDirectory)
