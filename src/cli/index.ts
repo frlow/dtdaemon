@@ -97,7 +97,7 @@ while (true) {
                     name: 'key',
                     type: 'list',
                     message: 'What setting do you want to change?',
-                    choices: ["username", "password", "domain", "insecure", "appDirectory"],
+                    choices: ["username", "password", "domain","project", "insecure", "appDirectory"],
                 },
             ])
             const key = keyResults.key as string
@@ -129,14 +129,14 @@ while (true) {
                     name: 'app',
                     type: 'list',
                     message: 'Manage app',
-                    choices: Object.entries(apps)
-                        .sort((a, b) => a[0].localeCompare(b[0]))
-                        .map(([name, installed]) => ({
-                            value: name,
-                            name: `\x1b[${installed ? '32' : '0'}m${name}\x1b[0m`,
+                    choices: apps
+                        .map(app => ({
+                            value: app.name,
+                            name: `\x1b[${app.installed ? '32' : '0'}m${app.name}\x1b[0m`,
                         })),
                 },
             ])
+            console.log(appResult)
             const meta = await client.getAppMetadata(appResult.app)
             const image = await client.getAppLogo(appResult.app)
             console.log(
@@ -147,7 +147,8 @@ while (true) {
             )
             console.log(`\n${appResult.app}`)
             console.log(meta.description || '')
-            const prompt = apps[appResult.app]
+            const app = apps.find(a=>a.name===appResult.app)
+            const prompt = app?.installed
                 ? {
                     name: 'command',
                     type: 'list',

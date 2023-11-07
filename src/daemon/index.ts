@@ -16,13 +16,13 @@ const app = new Elysia()
       set.status = busy ? 503 : !!getSettings().domain ? 200 : 204
     })
     .get('/busy', async () => {
-      while(busy) await Bun.sleep(50)
+      while (busy) await Bun.sleep(50)
     })
     .get('/settings', ({set}) => {
       set.headers = {
         'content-type': 'application/json',
       }
-      return JSON.stringify(getSettings())
+      return JSON.stringify({...getSettings(), password: undefined})
     })
     .post(
         '/settings',
@@ -36,7 +36,11 @@ const app = new Elysia()
       set.headers = {
         'content-type': 'application/json',
       }
-      return JSON.stringify(await listApps())
+      const apps = Object.entries(
+          await listApps()).map(([name, value]) =>
+          ({name, ...value}))
+      apps.sort((a,b)=>a.name.localeCompare(b.name))
+      return JSON.stringify(apps)
     })
     .get('/apps/:id', async ({set, params}) => {
       set.headers = {
@@ -44,7 +48,7 @@ const app = new Elysia()
       }
       return JSON.stringify(await getAppMetadata(params.id))
     })
-    .get('/apps/:id/logo', async ({ params}) => {
+    .get('/apps/:id/logo', async ({params}) => {
       return JSON.stringify(await getAppLogo(params.id))
     })
     .post(
@@ -74,7 +78,7 @@ const app = new Elysia()
       )
     })
     .post('/update', async () => {
-      if(busy) return new Response(undefined,{status: 503})
+      if (busy) return new Response(undefined, {status: 503})
       return new Response(
           new ReadableStream({
             type: 'direct',
@@ -84,7 +88,9 @@ const app = new Elysia()
                 console.log(msg)
                 controller.write(msg)
                 controller.flush()
-              }).catch(()=>{busy=false})
+              }).catch(() => {
+                busy = false
+              })
               controller.close()
               busy = false
             },
@@ -93,7 +99,7 @@ const app = new Elysia()
       )
     })
     .post('/pull', async () => {
-      if(busy) return new Response(undefined,{status: 503})
+      if (busy) return new Response(undefined, {status: 503})
       return new Response(
           new ReadableStream({
             type: 'direct',
@@ -103,7 +109,9 @@ const app = new Elysia()
                 console.log(msg)
                 controller.write(msg)
                 controller.flush()
-              }).catch(()=>{busy=false})
+              }).catch(() => {
+                busy = false
+              })
               controller.close()
               busy = false
             },

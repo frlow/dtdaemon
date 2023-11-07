@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/api.js",
   "scripts": {
-    "start": "tsx src/cli/index.ts",
+    "start": "bun src/cli/index.ts",
     "daemon": "bun --watch src/daemon/index.ts",
     "apps": "bun run ./apps/bundle.ts",
     "purge": "docker rm -f $(docker ps -a -q) || echo && docker volume rm $(docker volume ls -q) || echo  && docker rmi -f $(docker image ls -q) || echo",

@@ -8,6 +8,7 @@ const settingsPath = './config/settings.json'
 const installedAppsPath = './config/apps.json'
 
 export const getConfig = async () => {
+  console.log(path.resolve(settingsPath))
   const settings = getSettings()
   const installedApps = getInstalledApps()
   const appDirectory = await getAppDirectory(settings.appDirectory)
@@ -33,5 +34,6 @@ const loadConfig = <T>(file: string): T =>
 const saveConfig = (file: string, config: any) => {
   if (!fs.existsSync(path.dirname(file))) fs.mkdirSync(path.dirname(file))
   if (!fs.existsSync(file)) fs.writeFileSync(file, '{}', 'utf8')
+  delete config.repeat
   fs.writeFileSync(file, JSON.stringify(config, null, 2), 'utf8')
 }

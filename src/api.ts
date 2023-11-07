@@ -5,7 +5,7 @@ import { Log } from './types/Log'
 export type Client = ReturnType<typeof createClient>
 export const createClient = (daemonHostUrl: string) => ({
   status: async () =>
-    (await fetch(daemonHostUrl).catch(() => undefined))?.status,
+    (await fetch(daemonHostUrl).catch(() => undefined))?.status as number,
   pull: async (log: Log) => {
     const response = await fetch(`${daemonHostUrl}/pull`, { method: 'POST' })
     const reader = response.body?.getReader()
@@ -56,7 +56,7 @@ export const createClient = (daemonHostUrl: string) => ({
   getAppLogo: async (name: string) =>
     await fetch(`${daemonHostUrl}/apps/${name}/logo`).then((r) => r.text()),
 
-  listApps: async (): Promise<Record<string, boolean>> =>
+  listApps: async (): Promise<{installed: boolean, service: boolean, name: string}[]> =>
     await fetch(`${daemonHostUrl}/apps`).then((r) => r.json()),
 
   getAppMetadata: async (name: string): Promise<AppConfig> =>
@@ -71,4 +71,5 @@ export const createClient = (daemonHostUrl: string) => ({
       body: JSON.stringify(settings),
     })
   },
+  busy: async () => await fetch(`${daemonHostUrl}/busy`),
 })
