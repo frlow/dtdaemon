@@ -2,7 +2,7 @@ import {getAppDirectory} from './appDirectory'
 import {getSettings, getInstalledApps, saveInstalledApps} from './config'
 import {Variables} from '../types/Variables'
 
-export const listApps = async (): Promise<Record<string, {installed: boolean, service: boolean}>> => {
+export const listApps = async (): Promise<Record<string, { installed: boolean, service: boolean }>> => {
   const settings = getSettings()
   debugger
   const installedApps = getInstalledApps()
@@ -12,7 +12,7 @@ export const listApps = async (): Promise<Record<string, {installed: boolean, se
       (acc, cur) => ({
         ...acc, [cur]: {
           installed: !!installedApps[cur],
-          service: !appDir[cur].ingresses
+          ingresses: Object.keys(appDir[cur].ingresses || {})
         }
       }),
       {},

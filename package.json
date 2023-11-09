@@ -1,6 +1,6 @@
 {
   "name": "dtdaemon",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "main": "dist/api.js",
   "scripts": {

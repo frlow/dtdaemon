@@ -48,7 +48,7 @@ export const createClient = (daemonHostUrl: string) => ({
   getAppLogo: async (name: string) =>
       await fetch(`${daemonHostUrl}/apps/${name}/logo`).then((r) => r.text()),
 
-  listApps: async (): Promise<{ installed: boolean, service: boolean, name: string }[]> =>
+  listApps: async (): Promise<{ installed: boolean, ingresses: string[], name: string }[]> =>
       await fetch(`${daemonHostUrl}/apps`).then((r) => r.json()),
 
   getAppMetadata: async (name: string): Promise<AppConfig> =>
