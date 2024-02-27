@@ -45,7 +45,7 @@ const buildDockerImage = async (
     minify: false,
   }).then((r) => r.outputs[0].text())
   fs.writeFileSync(path.join(tempdir, 'index.js'), code, 'utf8')
-  await execCommand(`cd ${tempdir} && docker buildx build -t ${image} .`).result
+  await execCommand(`cd ${tempdir} && docker buildx build --load -t ${image} .`).result
   fs.rmSync(tempdir, { recursive: true })
 }
 

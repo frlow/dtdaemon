@@ -43,7 +43,13 @@ export const authService = (settings: Settings) => {
       'traefik.http.routers.auth.priority=1000',
       'traefik.http.services.auth.loadbalancer.server.port=3000',
       'traefik.http.routers.auth.service=auth',
+      `traefik.http.routers.directory.rule=Host(\`${settings.domain}\`)`,
+      'traefik.http.services.directory.loadbalancer.server.port=3000',
+      'traefik.http.routers.directory.service=auth',
       `traefik.http.routers.auth.entrypoints=web${
+        settings.insecure ? '' : 'secure'
+      }`,
+      `traefik.http.routers.directory.entrypoints=web${
         settings.insecure ? '' : 'secure'
       }`,
     ],
