@@ -15,7 +15,7 @@ export const initDaemon = async (client: Client)=>{
   await execCommand('docker network create dtdaemon').result
   await execCommand('docker rm -f dtdaemon').result
   await execCommand(
-      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v dtdaemon:/config -p 8466:8466 --net dtdaemon --name dtdaemon dtdaemon`,
+      `docker run -d -v /var/run/docker.sock:/var/run/docker.sock --restart=always -v dtdaemon:/config -p 8466:8466 --net dtdaemon --name dtdaemon dtdaemon`,
   ).result
   while (true) {
     console.log('Connecting to daemon...')
