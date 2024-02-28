@@ -8,7 +8,7 @@ export const loadApps = () => {
   const appDirectory: any = {}
   for (const file of files) {
     const filePath = path.join(appDir, file)
-    const { name, ext } = path.parse(filePath)
+    const {name, ext} = path.parse(filePath)
 
     if (ext === '.yaml') {
       if (!appDirectory[name]) appDirectory[name] = {}
@@ -19,16 +19,21 @@ export const loadApps = () => {
     } else if (ext === '.png') {
       if (!appDirectory[name]) appDirectory[name] = {}
       appDirectory[name].logoImage = Buffer.from(
-        fs.readFileSync(filePath),
+          fs.readFileSync(filePath),
       ).toString('base64')
     }
   }
+  Object.values(appDirectory).forEach((app: any) => {
+    if (!app.logoImage) app.logoImage = Buffer.from(
+        fs.readFileSync(path.join(appDir, "generic.png")),
+    ).toString('base64')
+  })
   // @ts-ignore
   return appDirectory
 }
 
 fs.writeFileSync(
-  path.join('./appDirectory.json'),
-  JSON.stringify(loadApps(), null, 2),
-  'utf8',
+    path.join('./appDirectory.json'),
+    JSON.stringify(loadApps(), null, 2),
+    'utf8',
 )
