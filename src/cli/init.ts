@@ -7,6 +7,7 @@ import { execCommand } from '../exec'
 export const buildImages = async () => {
   await buildAuthImage()
   await buildDaemonImage()
+  await buildAppsListImage()
 }
 
 export const initDaemon = async (client: Client)=>{
@@ -57,6 +58,17 @@ EXPOSE 3000
 CMD bun run /index.js`
   const entry = path.join(import.meta.path, '..', '..', 'login', 'index.ts')
   const image = 'simple-auth'
+  await buildDockerImage(dockerfile, entry, image)
+}
+
+const buildAppsListImage = async () => {
+  const dockerfile = `FROM oven/bun
+ADD index.js /index.js
+WORKDIR /
+EXPOSE 3000
+CMD bun run /index.js`
+  const entry = path.join(import.meta.path, '..', '..', 'list', 'index.ts')
+  const image = 'apps-list'
   await buildDockerImage(dockerfile, entry, image)
 }
 

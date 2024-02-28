@@ -63,9 +63,6 @@ const app = new Elysia()
       insecure ? '' : 's'
     }://${forwardedHost}/__login?redirect=${forwardUrl}`
   })
-  .get('/', ({ cookie, set, headers }) => {
-    return 'hello world'
-  })
   .listen(3000)
 
 console.log(

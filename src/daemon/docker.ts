@@ -1,11 +1,11 @@
-import { authService, traefikService } from './services'
-import { Log } from '../types/Log'
-import { Config } from '../types/Config'
-import { Settings } from '../types/Settings'
-import { Ingress } from '../types/Ingress'
-import { ComposeSpecification, DefinitionsService } from '../types/Compose'
-import { upAll, pullAll, logs } from 'docker-compose/dist/v2'
-import { execCommand } from '../exec'
+import {appsListService, authService, traefikService} from './services'
+import {Log} from '../types/Log'
+import {Config} from '../types/Config'
+import {Settings} from '../types/Settings'
+import {Ingress} from '../types/Ingress'
+import {ComposeSpecification, DefinitionsService} from '../types/Compose'
+import {pullAll, upAll} from 'docker-compose/dist/v2'
+import {execCommand} from '../exec'
 
 export const dockerLog = (config: Config, id: string) => {
   const queue: string[] = []
@@ -19,7 +19,7 @@ export const dockerLog = (config: Config, id: string) => {
     } else queue.push(msg)
   }
 
-  const { cancel } = execCommand(`docker logs dt-${id}-1 -f`, log)
+  const {cancel} = execCommand(`docker logs dt-${id}-1 -f`, log)
 
   const next = async (): Promise<string | undefined> => {
     if (closed) return undefined
@@ -31,7 +31,7 @@ export const dockerLog = (config: Config, id: string) => {
     closed = true
     resolve && resolve(undefined)
   }
-  return { next, close }
+  return {next, close}
 }
 
 export const dockerInstall = async (config: Config, log: Log) => {
@@ -56,7 +56,7 @@ export const dockerPull = async (config: Config, log: Log) => {
 }
 
 const generateCompose = async (
-  config: Config,
+    config: Config,
 ): Promise<ComposeSpecification> => {
   const settings = config.settings
   const installedApps = config.installedApps
@@ -64,23 +64,23 @@ const generateCompose = async (
     const appConfig = getAppConfig(id, config)
     const services = appConfig.services
     const ingresses: Ingress[] = Object.entries(appConfig.ingresses || {}).map(
-      ([id, value]: [id: string, value: any]) => {
-        if (typeof value === 'number')
-          return {
-            domain: id,
-            port: Math.abs(value),
-            service: id,
-            insecure: value < 0,
-          }
-        else
-          return {
-            domain: value.domain || id,
-            port: value.port,
-            service: id,
-            insecure: !!value.insecure,
-            protocol: value.protocol,
-          }
-      },
+        ([id, value]: [id: string, value: any]) => {
+          if (typeof value === 'number')
+            return {
+              domain: id,
+              port: Math.abs(value),
+              service: id,
+              insecure: value < 0,
+            }
+          else
+            return {
+              domain: value.domain || id,
+              port: value.port,
+              service: id,
+              insecure: !!value.insecure,
+              protocol: value.protocol,
+            }
+        },
     )
     for (const ingress of ingresses) {
       const service = services[ingress.service]
@@ -100,21 +100,22 @@ const generateCompose = async (
     return withVariables
   })
   const traefik = applyIngress(
-    traefikService(settings.insecure),
-    { service: 'traefik', port: 8080, domain: 'traefik' },
-    settings,
+      traefikService(settings.insecure),
+      {service: 'traefik', port: 8080, domain: 'traefik'},
+      settings,
   )
   installed.push(['traefik', traefik])
+  installed.push(['apps-list', appsListService(settings)])
   installed.push(['auth', authService(settings)])
   const services = installed.reduce(
-    (acc, [key, value]) => ({ ...acc, [key]: value }),
-    {},
+      (acc, [key, value]) => ({...acc, [key]: value}),
+      {},
   )
   const volumes = installed.reduce((acc, [key, value]) => {
     value.volumes
-      ?.filter((v: any) => !v.startsWith('/'))
-      .map((v: any) => v.split(':')[0].trim())
-      .forEach((nv: any) => (acc[nv] = {}))
+        ?.filter((v: any) => !v.startsWith('/'))
+        .map((v: any) => v.split(':')[0].trim())
+        .forEach((nv: any) => (acc[nv] = {}))
     return acc
   }, {})
   const networks = {default: {}, dtdaemon: {external: true}}
@@ -126,8 +127,8 @@ const generateCompose = async (
 }
 
 const replaceVariables = (
-  service: DefinitionsService,
-  variables: Record<string, string>,
+    service: DefinitionsService,
+    variables: Record<string, string>,
 ) => {
   let str = JSON.stringify(service)
   Object.entries(variables).forEach(([key, value]) => {
@@ -138,45 +139,45 @@ const replaceVariables = (
 }
 
 const applyIngress = (
-  service: DefinitionsService,
-  ingress: Ingress,
-  settings: Settings,
+    service: DefinitionsService,
+    ingress: Ingress,
+    settings: Settings,
 ) => {
   service.labels = service.labels || ['traefik.enable=true']
   // @ts-ignore
   service.labels.push(
-    ...[
-      `traefik.http.routers.${ingress.service}-${ingress.domain}.rule=Host(\`${ingress.domain}.${settings.domain}\`)`,
-      `traefik.http.services.${ingress.service}-${ingress.domain}.loadbalancer.server.port=${ingress.port}`,
-      `traefik.http.routers.${ingress.service}-${ingress.domain}.service=${ingress.service}-${ingress.domain}`,
-      `traefik.http.routers.${ingress.service}-${
-        ingress.domain
-      }.entrypoints=web${settings.insecure ? '' : 'secure'}`,
-    ],
+      ...[
+        `traefik.http.routers.${ingress.service}-${ingress.domain}.rule=Host(\`${ingress.domain}.${settings.domain}\`)`,
+        `traefik.http.services.${ingress.service}-${ingress.domain}.loadbalancer.server.port=${ingress.port}`,
+        `traefik.http.routers.${ingress.service}-${ingress.domain}.service=${ingress.service}-${ingress.domain}`,
+        `traefik.http.routers.${ingress.service}-${
+            ingress.domain
+        }.entrypoints=web${settings.insecure ? '' : 'secure'}`,
+      ],
   )
   if (!settings.insecure) {
     // @ts-ignore
     service.labels.push(
-      `traefik.http.routers.${ingress.service}-${ingress.domain}.tls.certresolver=default`,
+        `traefik.http.routers.${ingress.service}-${ingress.domain}.tls.certresolver=default`,
     )
   }
   if (!ingress.insecure) {
     // @ts-ignore
     service.labels.push(
-      ...[
-        `traefik.http.middlewares.${ingress.service}-${ingress.domain}.forwardauth.address=http://auth:3000/__login/q`,
-        `traefik.http.routers.${ingress.service}-${ingress.domain}.middlewares=${ingress.service}-${ingress.domain}@docker`,
-      ],
+        ...[
+          `traefik.http.middlewares.${ingress.service}-${ingress.domain}.forwardauth.address=http://auth:3000/__login/q`,
+          `traefik.http.routers.${ingress.service}-${ingress.domain}.middlewares=${ingress.service}-${ingress.domain}@docker`,
+        ],
     )
   }
   if (ingress.protocol) {
     // @ts-ignore
     service.labels.push(
-      `traefik.http.services.${ingress.service}-${ingress.domain}.loadbalancer.server.scheme=${ingress.protocol}`,
+        `traefik.http.services.${ingress.service}-${ingress.domain}.loadbalancer.server.scheme=${ingress.protocol}`,
     )
   }
   return service
 }
 
 const getAppConfig = (id: string, config: Config) =>
-  JSON.parse(JSON.stringify(config.appDirectory[id]))
+    JSON.parse(JSON.stringify(config.appDirectory[id]))

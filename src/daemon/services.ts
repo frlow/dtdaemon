@@ -1,4 +1,4 @@
-import { Settings } from '../types/Settings'
+import {Settings} from '../types/Settings'
 
 export const traefikService = (insecure: boolean) => {
   const traefik = {
@@ -14,19 +14,37 @@ export const traefikService = (insecure: boolean) => {
       '--entrypoints.web.address=:80',
       '--serverstransport.insecureskipverify=true',
     ],
-    networks: ['default','dtdaemon']
+    networks: ['default', 'dtdaemon']
   }
   if (!insecure)
     traefik.command.push(
-      ...[
-        '--entrypoints.websecure.address=:443',
-        '--entrypoints.web.http.redirections.entryPoint.to=websecure',
-        '--certificatesresolvers.default.acme.tlsChallenge=true',
-        '--certificatesresolvers.default.acme.storage=/data/acme.json',
-      ],
+        ...[
+          '--entrypoints.websecure.address=:443',
+          '--entrypoints.web.http.redirections.entryPoint.to=websecure',
+          '--certificatesresolvers.default.acme.tlsChallenge=true',
+          '--certificatesresolvers.default.acme.storage=/data/acme.json',
+        ],
     )
   return traefik
 }
+
+export const appsListService = (settings: Settings) => ({
+  image: 'apps-list',
+  restart: 'always',
+  environment: [
+    `HOST=http://dtdaemon:8466/`,
+  ],
+  networks: ['default', 'dtdaemon'],
+  labels: [
+    'traefik.enable=true',
+    `traefik.http.routers.apps-list.rule=Host(\`${settings.domain}\`)`,
+    'traefik.http.services.apps-list.loadbalancer.server.port=3000',
+    'traefik.http.routers.apps-list.service=apps-list',
+    `traefik.http.routers.apps-list.entrypoints=web${
+        settings.insecure ? '' : 'secure'
+    }`,
+  ],
+})
 
 export const authService = (settings: Settings) => {
   const service = {
@@ -43,14 +61,8 @@ export const authService = (settings: Settings) => {
       'traefik.http.routers.auth.priority=1000',
       'traefik.http.services.auth.loadbalancer.server.port=3000',
       'traefik.http.routers.auth.service=auth',
-      `traefik.http.routers.directory.rule=Host(\`${settings.domain}\`)`,
-      'traefik.http.services.directory.loadbalancer.server.port=3000',
-      'traefik.http.routers.directory.service=auth',
       `traefik.http.routers.auth.entrypoints=web${
-        settings.insecure ? '' : 'secure'
-      }`,
-      `traefik.http.routers.directory.entrypoints=web${
-        settings.insecure ? '' : 'secure'
+          settings.insecure ? '' : 'secure'
       }`,
     ],
   }
@@ -69,7 +81,7 @@ export const daemonService = (settings: Settings) => {
       'traefik.http.services.auth.loadbalancer.server.port=3000',
       'traefik.http.routers.auth.service=auth',
       `traefik.http.routers.auth.entrypoints=web${
-        settings.insecure ? '' : 'secure'
+          settings.insecure ? '' : 'secure'
       }`,
     ],
   }
