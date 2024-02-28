@@ -43,6 +43,8 @@ export const appsListService = (settings: Settings) => ({
     `traefik.http.routers.apps-list.entrypoints=web${
         settings.insecure ? '' : 'secure'
     }`,
+    `traefik.http.middlewares.apps-list.forwardauth.address=http://auth:3000/__login/q`,
+    `traefik.http.routers.apps-list.middlewares=apps-list@docker`,
   ],
 })
 
