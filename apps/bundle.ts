@@ -6,7 +6,7 @@ export const loadApps = () => {
   const appDir = './apps'
   const files = fs.readdirSync(appDir)
   const appDirectory: any = {}
-  for (const file of files) {
+  for (const file of files.filter(f=>!f.includes("generic.png"))) {
     const filePath = path.join(appDir, file)
     const {name, ext} = path.parse(filePath)
 
