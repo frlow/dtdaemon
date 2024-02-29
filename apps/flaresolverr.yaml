@@ -4,6 +4,3 @@ services:
     container_name: flaresolverr
     environment:
       - TZ=Europe/London
-
-ingresses:
-  flaresolverr: 8191
