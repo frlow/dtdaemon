@@ -349,7 +349,7 @@
     },
     "ingresses": {
       "unifi": {
-        "port": 8443,
+        "port": -8443,
         "protocol": "https"
       }
     },
